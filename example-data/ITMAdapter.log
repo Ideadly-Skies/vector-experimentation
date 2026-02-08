@@ -1,0 +1,11 @@
+[2025-09-07 03:03:02.480]  INFO - [860882] - ********** START TCP **********
+[2025-09-07 03:03:02.480]  INFO - [860882] - ParentTranSeqId = 2509070303024771, RqUID = MerchantFee_Batch_090703030247, STAN = 860882
+[2025-09-07 03:03:02.480]  INFO - [860882] - Message has been sent. Hostname = sibscimb01, Port = 20045, ConnectionId = af1398:198e99d800e:-77d5
+[2025-09-07 03:03:02.480]  INFO - [860882] - Waiting for reply message.
+[2025-09-07 03:03:02.503]  INFO - [860882] - Received message. STAN = 860882
+[2025-09-07 03:03:02.503]  INFO - [860882] - ********** END   TCP **********
+[2025-09-07 03:03:02.515]  INFO - [860883] - ********** START TCP **********
+[2025-09-07 03:03:02.515]  INFO - [860883] - ParentTranSeqId = 2509070303025122, RqUID = MerchantFee_Batch_090703030251, STAN = 860883
+[2025-09-07 03:03:02.515]  INFO - [860883] - Message has been sent. Hostname = sibscimb01, Port = 20045, ConnectionId = af1398:198e99d800e:-77d5
+[2025-09-07 03:03:02.515]  INFO - [860883] - Waiting for reply message.
+[2025-09-07 03:03:02.538]  INFO - [860883] - Received message. STAN = 860883
