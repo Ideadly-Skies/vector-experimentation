@@ -1,12 +1,12 @@
 # Vector Configuration for SSBAdapter Log Processing
-data_dir: /Users/obie/Documents/jobs/applied/2024/WerkDone 🎯💯/repositories/vector-experimentation/vector-data
+data_dir: "./vector-data"
 
 sources:
   # Read SSBAdapter.log file - tailing from the end
   ssb_adapter_logs:
     type: file
     include:
-      - "/Users/obie/Documents/jobs/applied/2024/WerkDone 🎯💯/repositories/vector-experimentation/example-data/SSBAdapter.log"
+      - "./example-data/SSBAdapter.log"
     # Start reading from the beginning to process existing logs
     read_from: beginning
     # Optional: handle log rotation
@@ -24,19 +24,21 @@ transforms:
 
       if err != null {
         log("Failed to parse log line: " + string!(.message), level: "warn")
-        abort
-      }
+        .unparsed_message = .message
+        .log_message = .unparsed_message
+        .event_type = "parse_failed"
+      } else {
+        # Extract fields when parsing succeeded
+        .timestamp = parsed.timestamp
+        .log_level = parsed.level
+        .correlation_id = parsed.correlation_id
+        .log_message = parsed.log_message
 
-      # Extract fields
-      .timestamp = parsed.timestamp
-      .log_level = parsed.level
-      .correlation_id = parsed.correlation_id
-      .log_message = parsed.log_message
-
-      # Parse timestamp to proper format
-      .parsed_timestamp, ts_err = parse_timestamp(.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f")
-      if ts_err == null {
-        .@timestamp = .parsed_timestamp
+        # Parse timestamp to proper format
+        .parsed_timestamp, ts_err = parse_timestamp(.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f")
+        if ts_err == null {
+          .@timestamp = .parsed_timestamp
+        }
       }
 
       # Extract structured information from log message
@@ -83,7 +85,6 @@ transforms:
       del(.message)
 
 sinks:
-  # Console output for debugging
   console_out:
     type: console
     inputs:
@@ -91,11 +92,33 @@ sinks:
     encoding:
       codec: json
 
-  # Optional: File output for processed logs (commented out for now)
-  # file_out:
-  #   type: file
+  loki_sink:
+    type: loki
+    inputs:
+      - parse_ssb_logs
+    endpoint: "http://localhost:3100"
+    encoding:
+      codec: json
+    labels:
+      service: "ssb-adapter"
+      environment: "dev"
+    tenant_id: "fake"
+    batch:
+      max_bytes: 102400
+      max_events: 100
+      timeout_secs: 1
+    request:
+      retry_attempts: 3
+
+  # NOTE: Direct Loki integration is working. If you need to route through OTel Collector:
+  # 1. Create an OTLP-format transform (see Vector docs for OTLP sink type)
+  # 2. Configure your dd-otel collector to accept OTLP logs and forward to Loki
+  # 3. Uncomment and update the sink below:
+  #
+  # otel_collector:
+  #   type: http  # or use type: opentelemetry for native OTLP
   #   inputs:
   #     - parse_ssb_logs
-  #   path: /Users/obie/Documents/jobs/applied/2024/WerkDone 🎯💯/repositories/vector-experimentation/processed-logs/ssb-%Y-%m-%d.json
+  #   uri: "http://localhost:4318/v1/logs"
   #   encoding:
   #     codec: json
