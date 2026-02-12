@@ -92,33 +92,30 @@ sinks:
     encoding:
       codec: json
 
-  loki_sink:
+  # Direct Loki connection (currently active)
+  loki_direct:
     type: loki
     inputs:
       - parse_ssb_logs
     endpoint: "http://localhost:3100"
+    healthcheck:
+      enabled: false
     encoding:
       codec: json
     labels:
       service: "ssb-adapter"
       environment: "dev"
-    tenant_id: "fake"
-    batch:
-      max_bytes: 102400
-      max_events: 100
-      timeout_secs: 1
-    request:
-      retry_attempts: 3
 
-  # NOTE: Direct Loki integration is working. If you need to route through OTel Collector:
-  # 1. Create an OTLP-format transform (see Vector docs for OTLP sink type)
-  # 2. Configure your dd-otel collector to accept OTLP logs and forward to Loki
-  # 3. Uncomment and update the sink below:
-  #
-  # otel_collector:
-  #   type: http  # or use type: opentelemetry for native OTLP
+  # Send to OTel Collector (disabled - OTel Collector not responding properly)
+  # otel_collector_via_loki:
+  #   type: loki
   #   inputs:
   #     - parse_ssb_logs
-  #   uri: "http://localhost:4318/v1/logs"
+  #   endpoint: "http://localhost:3500"
+  #   healthcheck:
+  #     enabled: false
   #   encoding:
   #     codec: json
+  #   labels:
+  #     service: "ssb-adapter-otel"
+  #     environment: "dev"
