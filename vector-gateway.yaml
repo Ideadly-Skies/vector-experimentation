@@ -1,0 +1,24 @@
+# Vector Gateway Configuration
+# Receives logs from Vector Agent and outputs to console
+data_dir: "./vector-data-gateway"
+
+sources:
+  # Receive logs from Vector Agent via HTTP
+  from_agent:
+    type: http_server
+    address: "0.0.0.0:8686"
+    encoding: json
+    # Acknowledge all requests immediately
+    acknowledgements:
+      enabled: true
+
+sinks:
+  # Print all received logs to console
+  console_output:
+    type: console
+    inputs:
+      - from_agent
+    encoding:
+      codec: json
+    # Pretty print for better readability
+    # target: stdout

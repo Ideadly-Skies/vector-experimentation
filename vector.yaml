@@ -92,30 +92,31 @@ sinks:
     encoding:
       codec: json
 
-  # Direct Loki connection (currently active)
-  loki_direct:
-    type: loki
+  # Send to Vector Gateway (agent → gateway communication)
+  to_gateway:
+    type: http
     inputs:
       - parse_ssb_logs
-    endpoint: "http://localhost:3100"
-    healthcheck:
-      enabled: false
+    uri: "http://localhost:8686"
     encoding:
       codec: json
-    labels:
-      service: "ssb-adapter"
-      environment: "dev"
+    method: post
+    compression: gzip
+    # Enable acknowledgements for reliability
+    acknowledgements:
+      enabled: true
 
-  # Send to OTel Collector (disabled - OTel Collector not responding properly)
-  # otel_collector_via_loki:
+  # Direct Loki connection (disabled - now routing through gateway)
+  # loki_direct:
   #   type: loki
   #   inputs:
   #     - parse_ssb_logs
-  #   endpoint: "http://localhost:3500"
+  #   endpoint: "http://localhost:3100"
   #   healthcheck:
   #     enabled: false
   #   encoding:
   #     codec: json
   #   labels:
-  #     service: "ssb-adapter-otel"
+  #     service: "ssb-adapter"
+  #     environment: "dev"
   #     environment: "dev"
