@@ -1,14 +1,15 @@
 # Vector Configuration for SSBAdapter Log Processing
-data_dir: "./vector-data"
+# Environment variables are loaded from .env file
+data_dir: "${VECTOR_AGENT_DATA_DIR:-./vector-data}"
 
 sources:
   # Read SSBAdapter.log file - tailing from the end
   ssb_adapter_logs:
     type: file
     include:
-      - "./example-data/SSBAdapter.log"
+      - "${LOG_FILE_PATH:-./example-data/SSBAdapter.log}"
     # Start reading from the beginning to process existing logs
-    read_from: beginning
+    read_from: "${LOG_READ_FROM:-beginning}"
     # Optional: handle log rotation
     # glob_minimum_cooldown_ms: 60000
 
@@ -78,8 +79,8 @@ transforms:
       }
 
       # Add metadata
-      .source_file = "SSBAdapter.log"
-      .adapter_type = "SSB"
+      .source_file = get_env_var("ADAPTER_SOURCE_FILE") ?? "SSBAdapter.log"
+      .adapter_type = get_env_var("ADAPTER_TYPE") ?? "SSB"
 
       # Remove the original unparsed message field
       del(.message)
@@ -92,19 +93,51 @@ sinks:
     encoding:
       codec: json
 
-  # Send to Vector Gateway (agent → gateway communication)
+  # Send to Vector Gateway (agent → gateway communication via HTTPS)
   to_gateway:
     type: http
     inputs:
       - parse_ssb_logs
-    uri: "http://localhost:8686"
+
+    # HTTPS URI with environment variable support
+    uri: "${VECTOR_GATEWAY_PROTOCOL:-https}://${VECTOR_GATEWAY_HOST:-localhost}:${VECTOR_GATEWAY_PORT:-8686}"
+
+    # Encoding configuration
     encoding:
       codec: json
-    method: post
-    compression: gzip
-    # Enable acknowledgements for reliability
+
+    # Compression for efficient data transfer
+    compression: "${HTTP_COMPRESSION:-gzip}"
+
+    # TLS Configuration for secure HTTPS communication
+    tls:
+      ca_file: "${TLS_CA_FILE:-./certs/ca.crt}"
+      verify_certificate: true
+      verify_hostname: true
+
+    # Health check configuration
+    healthcheck:
+      enabled: true
+
+    # Acknowledgements for reliable delivery
     acknowledgements:
       enabled: true
+
+    # Batch configuration for efficient processing
+    batch:
+      timeout_secs: 1
+      max_bytes: 10000000
+      max_events: 1000
+
+    # Request configuration for retries and timeouts
+    request:
+      timeout_secs: 60
+      retry_attempts: 5
+      retry_initial_backoff_secs: 1
+      retry_max_duration_secs: 30
+
+    # HTTP method
+    method: post
 
   # Direct Loki connection (disabled - now routing through gateway)
   # loki_direct:

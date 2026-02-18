@@ -1,0 +1,11 @@
+# Add .gitignore to protect sensitive files
+.env
+certs/*.key
+certs/*.csr
+certs/*.srl
+vector-data/*
+vector-data-gateway/*
+!vector-data/.gitkeep
+!vector-data-gateway/.gitkeep
+*.log
+.DS_Store
