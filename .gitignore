@@ -9,3 +9,6 @@ vector-data-gateway/*
 !vector-data-gateway/.gitkeep
 *.log
 .DS_Store
+
+# Log rotation archives
+logs-archive/*.zip
