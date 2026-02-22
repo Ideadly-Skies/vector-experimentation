@@ -1,13 +1,13 @@
-# Vector Configuration for SSBAdapter Log Processing
+# Vector Configuration for Multiple Adapter Log Processing
 # Environment variables are loaded from .env file
 data_dir: "${VECTOR_AGENT_DATA_DIR:-./vector-data}"
 
 sources:
-  # Read SSBAdapter.log file - tailing from the end
-  ssb_adapter_logs:
+  # Read all adapter log files - supports multiple adapters
+  adapter_logs:
     type: file
     include:
-      - "${LOG_FILE_PATH:-./example-data/SSBAdapter.log}"
+      - "${LOG_FILE_PATH:-./example-data/*.log}"
     # Start reading from the beginning to process existing logs
     read_from: "${LOG_READ_FROM:-beginning}"
     # Optional: handle log rotation
@@ -15,10 +15,10 @@ sources:
 
 transforms:
   # Parse the log format: [timestamp] LEVEL - [correlationId] - message
-  parse_ssb_logs:
+  parse_adapter_logs:
     type: remap
     inputs:
-      - ssb_adapter_logs
+      - adapter_logs
     source: |
       # Parse the log line format
       parsed, err = parse_regex(.message, r'^\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+-\s+\[(?P<correlation_id>[^\]]+)\]\s+-\s+(?P<log_message>.*)$')
@@ -78,9 +78,18 @@ transforms:
         .event_type = "other"
       }
 
-      # Add metadata
-      .source_file = get_env_var("ADAPTER_SOURCE_FILE") ?? "SSBAdapter.log"
-      .adapter_type = get_env_var("ADAPTER_TYPE") ?? "SSB"
+      # Add metadata - extract adapter type from filename
+      # Get the full file path (e.g., "./example-data/SSBAdapter.log")
+      filepath = string!(.file)
+
+      # Extract just the filename from the path
+      filename_parts = split(filepath, "/")
+      filename = string!(filename_parts[-1])
+      .source_file = filename
+
+      # Extract adapter type from filename (e.g., "SSBAdapter.log" -> "SSB")
+      # Remove the "Adapter.log" suffix to get the adapter type
+      .adapter_type = replace(filename, "Adapter.log", "")
 
       # Remove the original unparsed message field
       del(.message)
@@ -89,7 +98,7 @@ sinks:
   console_out:
     type: console
     inputs:
-      - parse_ssb_logs
+      - parse_adapter_logs
     encoding:
       codec: json
 
@@ -97,7 +106,7 @@ sinks:
   to_gateway:
     type: http
     inputs:
-      - parse_ssb_logs
+      - parse_adapter_logs
 
     # HTTPS URI with environment variable support
     uri: "${VECTOR_GATEWAY_PROTOCOL:-https}://${VECTOR_GATEWAY_HOST:-localhost}:${VECTOR_GATEWAY_PORT:-8686}"

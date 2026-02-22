@@ -1,0 +1,8 @@
+# Sink: Console output for debugging
+sinks:
+  console_out:
+    type: console
+    inputs:
+      - parse_adapter_logs
+    encoding:
+      codec: json

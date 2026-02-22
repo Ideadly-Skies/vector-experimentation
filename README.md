@@ -22,7 +22,7 @@ This project implements a production-ready Vector agent-to-gateway architecture 
 cp .env.example .env
 
 # Generate SSL/TLS certificates
-./generate-certs.sh
+./scripts/generate-certs.sh
 
 # Review configuration
 cat .env
@@ -33,13 +33,13 @@ cat .env
 **Terminal 1 - Gateway:**
 
 ```bash
-./run-vector-gateway.sh
+./scripts/run-vector-gateway.sh
 ```
 
 **Terminal 2 - Agent:**
 
 ```bash
-./run-vector.sh
+./scripts/run-vector.sh
 ```
 
 ### 3. Verify
@@ -54,24 +54,42 @@ You should see structured JSON logs appearing in the gateway terminal, indicatin
 ├── .env.example              # Environment template
 ├── .gitignore                # Git ignore rules
 ├── README.md                 # This file
-├── PRODUCTION_SETUP.md       # Detailed production documentation
-├── AGENT_GATEWAY_SETUP.md    # Agent-to-gateway architecture guide
-├── vector.yaml               # Agent configuration (with env vars)
-├── vector-gateway.yaml       # Gateway configuration (with env vars)
-├── generate-certs.sh         # SSL certificate generation script
-├── run-vector.sh             # Start agent
-├── run-vector-gateway.sh     # Start gateway
-├── reset-vector.sh           # Reset checkpoint data
-├── validate-setup.sh         # Validation script
+├── agent/                    # Vector Agent (modular configuration)
+│   ├── vector.yaml          # Root orchestration for agent
+│   ├── sources/             # Source configurations
+│   │   └── adapter_logs.yaml
+│   ├── transforms/          # VRL transformation scripts
+│   │   └── parse_adapter_logs.vrl
+│   └── sinks/               # Sink configurations
+│       ├── console_out.yaml
+│       └── to_gateway.yaml
+├── gateway/                  # Vector Gateway (modular configuration)
+│   ├── vector.yaml          # Root orchestration for gateway
+│   ├── sources/             # Source configurations
+│   │   └── from_agent.yaml
+│   └── sinks/               # Sink configurations
+│       └── console_output.yaml
+├── scripts/                  # Operational scripts
+│   ├── generate-certs.sh    # SSL certificate generation
+│   ├── run-vector.sh        # Start agent
+│   ├── run-vector-gateway.sh # Start gateway
+│   ├── reset-vector.sh      # Reset checkpoint data
+│   ├── rotate-logs.sh       # Log rotation
+│   └── validate-setup.sh    # Validation script
 ├── certs/                    # SSL/TLS certificates (generated)
 │   ├── ca.crt               # Certificate Authority
 │   ├── ca.key               # CA private key
 │   ├── gateway.crt          # Gateway certificate
 │   └── gateway.key          # Gateway private key
-├── vector-data/             # Agent checkpoint data
-├── vector-data-gateway/     # Gateway checkpoint data
-└── example-data/            # Sample log files
-    └── SSBAdapter.log
+├── data/                     # Data directories
+│   ├── agent/               # Agent checkpoint data
+│   ├── gateway/             # Gateway checkpoint data
+│   ├── examples/            # Sample log files
+│   │   └── SSBAdapter.log
+│   ├── logs-archive/        # Archived logs
+│   └── backup-original/     # Original data backups
+└── docs/                     # Documentation
+    └── AGENT_GATEWAY_SETUP.md
 ```
 
 ## Configuration
@@ -95,7 +113,7 @@ See `.env.example` for all available options.
 ### Reset and Re-process Logs
 
 ```bash
-./reset-vector.sh
+./scripts/reset-vector.sh
 ```
 
 This will:
@@ -122,14 +140,14 @@ curl --cacert ./certs/ca.crt -X POST https://localhost:8686 \
 
 ```bash
 rm -rf certs/
-./generate-certs.sh
+./scripts/generate-certs.sh
 ```
 
 ### Stop Services
 
 ```bash
-pkill -f "vector --config vector.yaml"
-pkill -f "vector --config vector-gateway.yaml"
+pkill -f "vector --config agent/vector.yaml"
+pkill -f "vector --config gateway/vector.yaml"
 ```
 
 ## Architecture

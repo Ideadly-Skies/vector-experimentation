@@ -5,12 +5,13 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$SCRIPT_DIR"
+# Change to project root (parent directory)
+cd "$SCRIPT_DIR/.."
 
 # Configuration
-LOG_FILE="${LOG_FILE_PATH:-./example-data/SSBAdapter.log}"
-ARCHIVE_DIR="./logs-archive"
-BACKUP_DIR="./backup-original-data"
+LOG_FILE="${LOG_FILE_PATH:-./data/examples/SSBAdapter.log}"
+ARCHIVE_DIR="./data/logs-archive"
+BACKUP_DIR="./data/backup-original"
 
 # Colors for output
 GREEN='\033[0;32m'

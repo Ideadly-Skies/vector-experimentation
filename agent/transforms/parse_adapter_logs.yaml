@@ -1,0 +1,7 @@
+# Transform: Parse adapter logs using VRL script
+transforms:
+  parse_adapter_logs:
+    type: remap
+    inputs:
+      - adapter_logs
+    file: agent/transforms/parse_adapter_logs.vrl

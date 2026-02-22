@@ -1,0 +1,10 @@
+# Sink: Print all received logs to console
+sinks:
+  console_output:
+    type: console
+    inputs:
+      - from_agent
+    encoding:
+      codec: json
+    # Pretty print for better readability
+    # target: stdout
