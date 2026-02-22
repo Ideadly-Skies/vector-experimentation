@@ -1,0 +1,73 @@
+# Parse the log line format: [timestamp] LEVEL - [correlationId] - message
+parsed, err = parse_regex(.message, r'^\[(?P<timestamp>[^\]]+)\]\s+(?P<level>\w+)\s+-\s+\[(?P<correlation_id>[^\]]+)\]\s+-\s+(?P<log_message>.*)$')
+
+if err != null {
+  log("Failed to parse log line: " + string!(.message), level: "warn")
+  .unparsed_message = .message
+  .log_message = .unparsed_message
+  .event_type = "parse_failed"
+} else {
+  # Extract fields when parsing succeeded
+  .timestamp = parsed.timestamp
+  .log_level = parsed.level
+  .correlation_id = parsed.correlation_id
+  .log_message = parsed.log_message
+
+  # Parse timestamp to proper format
+  .parsed_timestamp, ts_err = parse_timestamp(.timestamp, format: "%Y-%m-%d %H:%M:%S%.3f")
+  if ts_err == null {
+    .@timestamp = .parsed_timestamp
+  }
+}
+
+# Extract structured information from log message
+# Check for specific patterns
+if contains(string!(.log_message), "START HTTP") {
+  .event_type = "http_start"
+} else if contains(string!(.log_message), "END HTTP") {
+  .event_type = "http_end"
+} else if contains(string!(.log_message), "START GET TOKEN") {
+  .event_type = "token_start"
+} else if contains(string!(.log_message), "END GET TOKEN") {
+  .event_type = "token_end"
+} else if contains(string!(.log_message), "ParentTranSeqId") {
+  .event_type = "transaction_info"
+  # Extract transaction details
+  txn_match, _ = parse_regex(.log_message, r'ParentTranSeqId = (?P<parent_seq>[^,]+), RqUID = (?P<rq_uid>[^,]+), CorrelId = (?P<correl_id>.+)$')
+  if txn_match != null {
+    .parent_transaction_seq_id = txn_match.parent_seq
+    .request_uid = txn_match.rq_uid
+    .correlation_id_detail = txn_match.correl_id
+  }
+} else if contains(string!(.log_message), "Message has been sent") {
+  .event_type = "message_sent"
+  # Extract URL
+  url_match, _ = parse_regex(.log_message, r'URL = (?P<url>.+)$')
+  if url_match != null {
+    .target_url = url_match.url
+  }
+} else if contains(string!(.log_message), "SourceSystem") {
+  .event_type = "source_system"
+  sys_match, _ = parse_regex(.log_message, r'SourceSystem = (?P<system>.+)$')
+  if sys_match != null {
+    .source_system = sys_match.system
+  }
+} else {
+  .event_type = "other"
+}
+
+# Add metadata - extract adapter type from filename
+# Get the full file path (e.g., "./example-data/SSBAdapter.log")
+filepath = string!(.file)
+
+# Extract just the filename from the path
+filename_parts = split(filepath, "/")
+filename = string!(filename_parts[-1])
+.source_file = filename
+
+# Extract adapter type from filename (e.g., "SSBAdapter.log" -> "SSB")
+# Remove the "Adapter.log" suffix to get the adapter type
+.adapter_type = replace(filename, "Adapter.log", "")
+
+# Remove the original unparsed message field
+del(.message)

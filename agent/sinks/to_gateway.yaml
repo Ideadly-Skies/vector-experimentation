@@ -1,0 +1,46 @@
+# Sink: Send to Vector Gateway (agent → gateway communication via HTTPS)
+sinks:
+  to_gateway:
+    type: http
+    inputs:
+      - parse_adapter_logs
+
+    # HTTPS URI with environment variable support
+    uri: "${VECTOR_GATEWAY_PROTOCOL:-https}://${VECTOR_GATEWAY_HOST:-localhost}:${VECTOR_GATEWAY_PORT:-8686}"
+
+    # Encoding configuration
+    encoding:
+      codec: json
+
+    # Compression for efficient data transfer
+    compression: "${HTTP_COMPRESSION:-gzip}"
+
+    # TLS Configuration for secure HTTPS communication
+    tls:
+      ca_file: "${TLS_CA_FILE:-./certs/ca.crt}"
+      verify_certificate: true
+      verify_hostname: true
+
+    # Health check configuration
+    healthcheck:
+      enabled: true
+
+    # Acknowledgements for reliable delivery
+    acknowledgements:
+      enabled: true
+
+    # Batch configuration for efficient processing
+    batch:
+      timeout_secs: 1
+      max_bytes: 10000000
+      max_events: 1000
+
+    # Request configuration for retries and timeouts
+    request:
+      timeout_secs: 60
+      retry_attempts: 5
+      retry_initial_backoff_secs: 1
+      retry_max_duration_secs: 30
+
+    # HTTP method
+    method: post

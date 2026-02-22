@@ -4,6 +4,10 @@
 
 set -e
 
+# Get script directory and change to project root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 CERT_DIR="./certs"
 DAYS_VALID=365
 

@@ -1,0 +1,10 @@
+# Source: Read all adapter log files - supports multiple adapters
+sources:
+  adapter_logs:
+    type: file
+    include:
+      - "${LOG_FILE_PATH:-./data/examples/*.log}"
+    # Start reading from the beginning to process existing logs
+    read_from: "${LOG_READ_FROM:-beginning}"
+    # Optional: handle log rotation
+    # glob_minimum_cooldown_ms: 60000

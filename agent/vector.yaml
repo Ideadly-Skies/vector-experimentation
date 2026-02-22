@@ -1,0 +1,6 @@
+# Vector Agent Configuration - Root Orchestration
+# Environment variables are loaded from .env file
+data_dir: "${VECTOR_AGENT_DATA_DIR:-./data/agent}"
+
+# This file will be combined with component files at runtime
+# Run with: vector --config agent/vector.yaml --config agent/sources/*.yaml --config agent/sinks/*.yaml

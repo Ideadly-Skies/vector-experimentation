@@ -3,7 +3,8 @@
 # Reset Vector - Clear checkpoint data to re-process logs from beginning
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$SCRIPT_DIR"
+# Change to project root (parent directory)
+cd "$SCRIPT_DIR/.."
 
 # Load environment variables from .env file
 if [ -f ".env" ]; then
@@ -12,8 +13,8 @@ if [ -f ".env" ]; then
     set +a
 fi
 
-AGENT_DATA_DIR="${VECTOR_AGENT_DATA_DIR:-./vector-data}"
-GATEWAY_DATA_DIR="${VECTOR_GATEWAY_DATA_DIR:-./vector-data-gateway}"
+AGENT_DATA_DIR="${VECTOR_AGENT_DATA_DIR:-./data/agent}"
+GATEWAY_DATA_DIR="${VECTOR_GATEWAY_DATA_DIR:-./data/gateway}"
 
 echo "================================================"
 echo "Vector Reset - Clear Checkpoint Data"
@@ -22,8 +23,8 @@ echo
 
 # Stop Vector if running
 echo "Stopping any running Vector processes..."
-pkill -f "vector --config vector.yaml" 2>/dev/null || true
-pkill -f "vector --config vector-gateway.yaml" 2>/dev/null || true
+pkill -f "vector --config agent/vector.yaml" 2>/dev/null || true
+pkill -f "vector --config gateway/vector.yaml" 2>/dev/null || true
 sleep 1
 echo "✅ Vector processes stopped"
 echo

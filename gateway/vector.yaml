@@ -1,0 +1,7 @@
+# Vector Gateway Configuration - Root Orchestration
+# Receives logs from Vector Agent via HTTPS and outputs to console
+# Environment variables are loaded from .env file
+data_dir: "${VECTOR_GATEWAY_DATA_DIR:-./data/gateway}"
+
+# This file will be combined with component files at runtime
+# Run with: vector --config gateway/vector.yaml --config gateway/sources/*.yaml --config gateway/sinks/*.yaml

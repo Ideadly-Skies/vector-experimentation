@@ -1,0 +1,19 @@
+# Source: Receive logs from Vector Agent via HTTPS
+sources:
+  from_agent:
+    type: http_server
+    address: "${VECTOR_GATEWAY_ADDRESS:-0.0.0.0}:${VECTOR_GATEWAY_PORT:-8686}"
+    encoding: json
+
+    # TLS Configuration for secure HTTPS communication
+    tls:
+      enabled: true
+      crt_file: "${TLS_GATEWAY_CERT_FILE:-./certs/gateway.crt}"
+      key_file: "${TLS_GATEWAY_KEY_FILE:-./certs/gateway.key}"
+      # Optionally require client certificates (mutual TLS)
+      # ca_file: "${TLS_CA_FILE:-./certs/ca.crt}"
+      # verify_certificate: true
+
+    # Acknowledge all requests immediately
+    acknowledgements:
+      enabled: true
