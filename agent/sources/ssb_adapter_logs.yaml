@@ -1,0 +1,13 @@
+# Source: SSB Adapter Logs - Contextual configuration for SSB adapter
+sources:
+  ssb_adapter_logs:
+    type: file
+    include:
+      - "${SSB_LOG_FILE_PATH:-./data/logs/ssb_adapter*.log}"
+    # Start reading from the beginning to process existing logs
+    read_from: "${SSB_LOG_READ_FROM:-beginning}"
+    # Optional: handle log rotation
+    # glob_minimum_cooldown_ms: 60000
+    
+    # Optional: add context/tags specific to SSB adapter
+    # This helps identify which adapter the logs came from

@@ -1,11 +1,10 @@
-# Source: Receive logs from Vector Agent via HTTPS
+# Source: Receive logs from Vector Agent via Vector protocol
 sources:
   from_agent:
-    type: http_server
-    address: "${VECTOR_GATEWAY_ADDRESS:-0.0.0.0}:${VECTOR_GATEWAY_PORT:-8686}"
-    encoding: json
+    type: vector
+    address: "${VECTOR_GATEWAY_ADDRESS:-0.0.0.0}:${VECTOR_GATEWAY_PORT:-9000}"
 
-    # TLS Configuration for secure HTTPS communication
+    # TLS Configuration for secure communication
     tls:
       enabled: true
       crt_file: "${TLS_GATEWAY_CERT_FILE:-./certs/gateway.crt}"

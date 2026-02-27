@@ -5,7 +5,7 @@
 ```
 SSBAdapter.log → Vector Agent → Vector Gateway → Console Output
                  (agent/vector.yaml)   (gateway/vector.yaml)
-                                 (localhost:8686)
+                                 (localhost:9000 - Vector protocol)
 ```
 
 ## How to Run
@@ -18,8 +18,8 @@ SSBAdapter.log → Vector Agent → Vector Gateway → Console Output
 
 The gateway will:
 
-- Listen on http://localhost:8686
-- Receive JSON logs from the agent
+- Listen on localhost:9000 using Vector's native protocol
+- Receive structured logs from the agent
 - Print all received logs to console
 
 ### Step 2: Start the Vector Agent (Terminal 2)
@@ -30,9 +30,9 @@ The gateway will:
 
 The agent will:
 
-- Read logs from ./data/examples/SSBAdapter.log
+- Read logs from configured log files (see .env for paths)
 - Parse and structure the logs
-- Send JSON via HTTP POST to gateway at localhost:8686
+- Send via Vector protocol to gateway at localhost:9000
 - Also output to its own console for debugging
 
 ## Verification
